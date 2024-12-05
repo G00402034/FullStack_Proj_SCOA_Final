@@ -1,7 +1,9 @@
-import { useState } from 'react';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
-const CreateTask = () => {
+const EditTask = () => {
+  const router = useRouter();
+  const { id } = router.query;
   const [task, setTask] = useState({
     title: '',
     description: '',
@@ -9,7 +11,14 @@ const CreateTask = () => {
     priority: 'Medium',
     collaborators: '',
   });
-  const router = useRouter();
+
+  useEffect(() => {
+    if (id) {
+      fetch(`/api/tasks/${id}`)
+        .then((res) => res.json())
+        .then((data) => setTask(data));
+    }
+  }, [id]);
 
   const handleChange = (e) => {
     setTask({ ...task, [e.target.name]: e.target.value });
@@ -17,8 +26,8 @@ const CreateTask = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch('/api/tasks', {
-      method: 'POST',
+    const response = await fetch(`/api/tasks/${id}`, {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(task),
     });
@@ -30,18 +39,16 @@ const CreateTask = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h1>Create a New Task</h1>
+      <h1>Edit Task</h1>
       <input
         type="text"
         name="title"
-        placeholder="Title"
         value={task.title}
         onChange={handleChange}
         required
       />
       <textarea
         name="description"
-        placeholder="Description"
         value={task.description}
         onChange={handleChange}
       />
@@ -60,13 +67,12 @@ const CreateTask = () => {
       <input
         type="text"
         name="collaborators"
-        placeholder="Collaborators (comma-separated)"
         value={task.collaborators}
         onChange={handleChange}
       />
-      <button type="submit">Create Task</button>
+      <button type="submit">Save Changes</button>
     </form>
   );
 };
 
-export default CreateTask;
+export default EditTask;
